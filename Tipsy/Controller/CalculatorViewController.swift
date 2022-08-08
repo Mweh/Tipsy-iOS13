@@ -15,51 +15,37 @@ class CalculatorViewController: UIViewController {
     @IBOutlet weak var twentyPctButton: UIButton!
     @IBOutlet weak var splitNumberLabel: UILabel!
     
-    var tip = 0.1
-    var split = "2"
-    var totalBill: Float = 0.0
+    var calculatorBrain = CalculatorBrain()
     
     @IBAction func tipChanged(_ sender: UIButton) {
         billTextField.endEditing(true)
-        
         zeroPctButton.isSelected = false
         tenPctButton.isSelected = false
         twentyPctButton.isSelected = false
-        
         sender.isSelected = true
-        
         let buttonTitle = sender.currentTitle!
-        
         let buttonTitleWithoutPercent = String(buttonTitle.dropLast())
-        
-        tip = Double(buttonTitleWithoutPercent)!/100
-
+        calculatorBrain.tip = Float(buttonTitleWithoutPercent)!/100
     }
     @IBAction func stepperValueChanged(_ sender: UIStepper) {
         billTextField.endEditing(true)
         splitNumberLabel.text = String(format: "%.0f", sender.value)
-        
-        split = splitNumberLabel.text!
+        calculatorBrain.split = Float(sender.value)
     }
     @IBAction func calculatePressed(_ sender: UIButton) {
-        let floatBillTextField = (Float(billTextField.text!) ?? 0.0)
-        totalBill = ((floatBillTextField+(floatBillTextField*Float(tip))) / (Float(split) ?? 0.0))
-        print(String(format: "%.2f", totalBill))
-        
+        let billInNumber = Float(billTextField.text!) ?? 0.0
+        calculatorBrain.finalBil = calculatorBrain.calculateBil(tB: billInNumber, t: calculatorBrain.tip, s: calculatorBrain.split)
         performSegue(withIdentifier: "goToResult", sender: self)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "goToResult"{
             let destinationVC = segue.destination as! ResultViewController
-            destinationVC.totalBill = String(format: "%.2f", totalBill)
-            print(tip)
-            print(split)
-            destinationVC.tipPercentage = Int(tip*100)
-            destinationVC.numberOfPeople = split
+            destinationVC.totalBill = String(format: "%.2f", calculatorBrain.finalBil!)
+            destinationVC.tipPercentage = Int(calculatorBrain.tip*100)
+            destinationVC.numberOfPeople = Int(calculatorBrain.split)
         }
     }
     
-
 }
 
